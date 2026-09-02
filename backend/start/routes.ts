@@ -24,10 +24,10 @@ router
       .group(() => {
         router.post('register', [AuthController, 'register'])
         router.post('login', [AuthController, 'login'])
+        router.get('me', [AuthController, 'me']).use(middleware.auth())
       })
       .prefix('auth')
       .as('auth')
-
     // Protected Account Routes
     router
       .group(() => {

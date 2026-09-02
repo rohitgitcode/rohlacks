@@ -21,44 +21,44 @@ export default class AuthController {
   async register({ request, response }: HttpContext) {
     const payload = await request.validateUsing(registerValidator)
 
-    const result = await db.transaction(async (trx) => {
-      // 1. Create User
-      const user = new User()
-      user.fullName = payload.fullName
-      user.email = payload.email
-      user.password = payload.password
-      user.useTransaction(trx)
-      await user.save()
+    // 1. Atomically create User, Workspace, and Pivot entry
+    const { user, workspace } = await db.transaction(async (trx) => {
+      const newUser = new User()
+      newUser.fullName = payload.fullName
+      newUser.email = payload.email
+      newUser.password = payload.password
+      newUser.useTransaction(trx)
+      await newUser.save()
 
-      // 2. Prepare Workspace Name & Unique Slug
       const rawWorkspaceName = payload.workspaceName || `${payload.fullName}'s Workspace`
       const slug = this.generateSlug(rawWorkspaceName)
 
-      // 3. Create Workspace
-      const workspace = new Workspace()
-      workspace.name = rawWorkspaceName
-      workspace.slug = slug
-      workspace.ownerId = user.id
-      workspace.useTransaction(trx)
-      await workspace.save()
+      const newWorkspace = new Workspace()
+      newWorkspace.name = rawWorkspaceName
+      newWorkspace.slug = slug
+      newWorkspace.ownerId = newUser.id
+      newWorkspace.useTransaction(trx)
+      await newWorkspace.save()
 
-      // 4. Attach User to Workspace as OWNER in pivot table
-      await workspace.related('members').attach({
-        [user.id]: { role: 'OWNER' },
-      }, trx)
+      await newWorkspace.related('members').attach(
+        {
+          [newUser.id]: { role: 'OWNER' },
+        },
+        trx
+      )
 
-      // 5. Create Access Token for immediate authentication
-      const token = await User.accessTokens.create(user)
-
-      return { user, workspace, token }
+      return { user: newUser, workspace: newWorkspace }
     })
+
+    // 2. Create Access Token after successful transaction
+    const token = await User.accessTokens.create(user)
 
     return response.created({
       message: 'User registered successfully',
       data: {
-        user: result.user,
-        workspace: result.workspace,
-        token: result.token.value!.release(),
+        user,
+        workspace,
+        token: token.value!.release(),
       },
     })
   }
@@ -84,6 +84,19 @@ export default class AuthController {
         user,
         token: token.value!.release(),
       },
+    })
+  }
+
+  /**
+   * Get current authenticated user details with workspaces
+   */
+  async me({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('workspaces')
+
+    return response.ok({
+      message: 'Profile fetched successfully',
+      data: { user },
     })
   }
 }
