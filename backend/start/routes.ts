@@ -25,9 +25,11 @@ router
         router.post('register', [AuthController, 'register'])
         router.post('login', [AuthController, 'login'])
         router.get('me', [AuthController, 'me']).use(middleware.auth())
+        router.post('logout', [controllers.AccessTokens, 'destroy']).use(middleware.auth())
       })
       .prefix('auth')
       .as('auth')
+
     // Protected Account Routes
     router
       .group(() => {
@@ -35,7 +37,7 @@ router
         router.post('logout', [controllers.AccessTokens, 'destroy'])
       })
       .prefix('account')
-      .as('profile')
+      .as('account')
       .use(middleware.auth())
   })
   .prefix('/api/v1')

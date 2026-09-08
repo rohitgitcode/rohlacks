@@ -1,5 +1,5 @@
 import User from '#models/user'
-import { loginValidator } from '#models/validators/user'
+import { loginValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import UserTransformer from '#transformers/user_transformer'
 
@@ -18,7 +18,7 @@ export default class AccessTokensController {
 
   async destroy({ auth }: HttpContext) {
     const user = auth.getUserOrFail()
-    if (user.currentAccessToken) {
+    if ('currentAccessToken' in user && user.currentAccessToken) {
       await User.accessTokens.delete(user, user.currentAccessToken.identifier)
     }
 

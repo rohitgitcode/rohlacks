@@ -42,7 +42,11 @@ export default class AuthController {
 
       await newWorkspace.related('members').attach(
         {
-          [newUser.id]: { role: 'OWNER' },
+          [newUser.id]: {
+            role: 'OWNER',
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
         },
         trx
       )
@@ -52,11 +56,12 @@ export default class AuthController {
 
     // 2. Create Access Token after successful transaction
     const token = await User.accessTokens.create(user)
+    await user.load('workspaces')
 
     return response.created({
       message: 'User registered successfully',
       data: {
-        user,
+        user: user.serialize(),
         workspace,
         token: token.value!.release(),
       },
@@ -68,13 +73,13 @@ export default class AuthController {
     const user = await User.verifyCredentials(email, password)
     await user.load('workspaces')
 
-    // Create acces token
+    // Create access token
     const token = await User.accessTokens.create(user)
 
     return response.ok({
       message: 'Login successful',
       data: {
-        user,
+        user: user.serialize(),
         token: token.value!.release(),
       },
     })
@@ -84,12 +89,12 @@ export default class AuthController {
    * Get current authenticated user details with workspaces
    */
   async me({ auth, response }: HttpContext) {
-    const user = auth.getUserOrFail()
+    const user = auth.getUserOrFail() as User
     await user.load('workspaces')
 
     return response.ok({
       message: 'Profile fetched successfully',
-      data: { user },
+      data: { user: user.serialize() },
     })
-}
+  }
 }

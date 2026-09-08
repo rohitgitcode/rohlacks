@@ -13,7 +13,7 @@ export class AuthAccessTokenSchema extends BaseModel {
   @column()
   declare abilities: string
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime | null
+  declare createdAt: DateTime
   @column.dateTime()
   declare expiresAt: DateTime | null
   @column()
@@ -49,23 +49,6 @@ export class UserSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
-export class WorkspaceMemberSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'role', 'updatedAt', 'userId', 'workspaceId'] as const
-  $columns = WorkspaceMemberSchema.$columns
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column({ isPrimary: true })
-  declare id: number
-  @column()
-  declare role: string | null
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
-  @column()
-  declare userId: number | null
-  @column()
-  declare workspaceId: number | null
-}
-
 export class WorkspaceSchema extends BaseModel {
   static $columns = ['createdAt', 'id', 'name', 'ownerId', 'slug', 'updatedAt'] as const
   $columns = WorkspaceSchema.$columns
@@ -81,4 +64,21 @@ export class WorkspaceSchema extends BaseModel {
   declare slug: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class WorkspaceMemberSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'role', 'updatedAt', 'userId', 'workspaceId'] as const
+  $columns = WorkspaceMemberSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare role: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+  @column()
+  declare workspaceId: number | null
 }

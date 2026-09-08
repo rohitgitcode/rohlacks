@@ -6,14 +6,18 @@ export interface ApiDefinition {
     auth: {
       register: typeof routes['auth.auth.register']
       login: typeof routes['auth.auth.login']
-    }
-  }
-  profile: {
-    profile: {
-      show: typeof routes['profile.profile.show']
+      me: typeof routes['auth.auth.me']
     }
     accessTokens: {
-      destroy: typeof routes['profile.access_tokens.destroy']
+      destroy: typeof routes['auth.access_tokens.destroy']
+    }
+  }
+  account: {
+    profile: {
+      show: typeof routes['account.profile.show']
+    }
+    accessTokens: {
+      destroy: typeof routes['account.access_tokens.destroy']
     }
   }
 }
