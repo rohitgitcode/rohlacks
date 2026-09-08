@@ -21,7 +21,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare email: string
 
-  @column({ serializeAs: null }) // API response me hashed password leak nahi hoga
+  @column({ serializeAs: null }) // In API response poassword wont get leaked 
   declare password: string
 
   @column.dateTime({ autoCreate: true })

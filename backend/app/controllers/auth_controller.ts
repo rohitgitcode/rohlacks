@@ -63,19 +63,12 @@ export default class AuthController {
     })
   }
 
-  /**
-   * Login user & generate access token
-   */
   async login({ request, response }: HttpContext) {
     const { email, password } = await request.validateUsing(loginValidator)
-
-    // Verify credentials
     const user = await User.verifyCredentials(email, password)
-
-    // Fetch user's workspaces
     await user.load('workspaces')
 
-    // Create Access Token
+    // Create acces token
     const token = await User.accessTokens.create(user)
 
     return response.ok({
@@ -98,5 +91,5 @@ export default class AuthController {
       message: 'Profile fetched successfully',
       data: { user },
     })
-  }
+}
 }
