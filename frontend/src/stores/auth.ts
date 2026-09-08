@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchCurrentUser() {
     if (!token.value) return null
     try {
-      const response = await api.get('/account/me')
+      const response = await api.get('/auth/me')
       user.value = response.data.data.user
       return user.value
     } catch {
@@ -55,10 +55,18 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
-    user.value = null
-    token.value = null
-    localStorage.removeItem('access_token')
+  async function logout() {
+    try {
+      if (token.value) {
+        await api.post('/auth/logout')
+      }
+    } catch {
+      // Ignore error if network fails or token already invalid
+    } finally {
+      user.value = null
+      token.value = null
+      localStorage.removeItem('access_token')
+    }
   }
 
   return {
